@@ -7,6 +7,7 @@ import select
 import fcntl
 import os
 import subprocess
+import pty
 
 logger = getLogger(__name__)
 
@@ -37,6 +38,9 @@ class Process(Tube):
         self.reservoir = b''
         self.proc = None
 
+        master, slave = pty.openpty()
+        stdout = slave
+
         # Create a new process
         try:
             self.proc = subprocess.Popen(
@@ -44,13 +48,18 @@ class Process(Tube):
                 cwd = cwd,
                 env = self.env,
                 shell = False,
-                stdout=subprocess.PIPE,
+                stdout=stdout,
                 stderr=subprocess.STDOUT,
                 stdin=subprocess.PIPE
             )
         except FileNotFoundError:
             logger.warning("Executable not found: '{0}'".format(self.filepath))
             return
+
+        self.proc.stdout = os.fdopen(os.dup(master), 'r+b', 0)
+
+        os.close(master)
+        os.close(slave)
 
         # Set in non-blocking mode
         fd = self.proc.stdout.fileno()
