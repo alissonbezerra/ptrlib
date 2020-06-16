@@ -51,7 +51,7 @@ def extract_flag(haystack, nee='FLAG{', dle='}'):
                     result.append(target[s:e + len(dle)])
                 else:
                     result.append(target[s:e + 1])
-                    
+
     return result
 
 def consists_of(text, charset, per=1.0, returns=bool):
@@ -85,13 +85,19 @@ def consists_of(text, charset, per=1.0, returns=bool):
         allowed = list(charset)
     else:
         logger.warn("Expected 'list'/'str'/'bytes' but '{}' given for `charset`".format(type(text)))
-    
+
     count = 0
     for elm in target:
         if elm in allowed:
             count += 1
-    
+
     if returns == bool:
         return True if count / len(target) >= per else False
     else:
         return count / len(target)
+
+def pause():
+    """Waits for user input
+    """
+    logger.info("Press any key to continue")
+    input()
